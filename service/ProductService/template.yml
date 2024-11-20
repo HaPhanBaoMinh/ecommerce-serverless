@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Product CRUD Service
+
+Resources:
+  Product:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Product
+      AttributeDefinitions:
+        - AttributeName: product_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: product_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  ProductFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./ProductFunction
+      Timeout: 60
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref Product
+          AWS_REGION: us-west-2
+          DYNAMODB_ENDPOINT: http://ddb-local:8000  # Local DynamoDB endpoint (only for local testing)
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Product
+      Events:
+        ProductWithIdApi:
+          Type: Api
+          Properties:
+            Path: /product/{product_id}
+            Method: ANY
+        
+        GetProductsApi:
+          Type: Api
+          Properties:
+            Path: /product
+            Method: ANY
