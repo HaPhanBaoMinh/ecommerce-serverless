@@ -1,0 +1,52 @@
+{
+    "Product": [
+        {
+            "PutRequest": {
+                "Item": {
+                    "product_id": {
+                        "S": "1"
+                    },
+                    "name": {
+                        "S": "Swiss Cheese"
+                    },
+                    "slug": {
+                        "S": "swiss-cheese"
+                    },
+                    "price": {
+                        "N": "956.97"
+                    },
+                    "description": {
+                        "S": "Swiss cheese is a mild cow's milk cheese with a firmer texture than baby Swiss. The flavor is light, sweet, and nutty. Swiss cheese is distinguished by its luster, pale yellow color, and large holes (called eyes) caused by carbon dioxide released during the maturation process."
+                    },
+                    "image_url": {
+                        "S": "https://i.ibb.co/N16wJ48/swiss-cheese.png"
+                    }
+                }
+            }
+        },
+        {
+            "PutRequest": {
+                "Item": {
+                    "product_id": {
+                        "S": "2"
+                    },
+                    "name": {
+                        "S": "Pears"
+                    },
+                    "slug": {
+                        "S": "pears"
+                    },
+                    "price": {
+                        "N": "759.19"
+                    },
+                    "description": {
+                        "S": "Pears are rich in essential antioxidants, plant compounds, and dietary fiber. They pack all of these nutrients in a fat free, cholesterol free, 100 calorie package."
+                    },
+                    "image_url": {
+                        "S": "https://i.ibb.co/4fn5HJv/pear.png"
+                    }
+                }
+            }
+        }
+    ]
+}

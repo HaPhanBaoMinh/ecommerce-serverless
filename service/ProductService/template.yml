@@ -2,6 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Product CRUD Service
 
+Globals:
+    Api:
+        Cors:
+            AllowMethods: "'GET,POST,OPTIONS'"
+            AllowHeaders: "'content-type'"
+            AllowOrigin: "'*'"
+            
 Resources:
   Product:
     Type: AWS::DynamoDB::Table
@@ -34,11 +41,13 @@ Resources:
         ProductWithIdApi:
           Type: Api
           Properties:
-            Path: /product/{product_id}
+            Path: /products/{product_id}
             Method: ANY
         
         GetProductsApi:
           Type: Api
           Properties:
-            Path: /product
+            Path: /products
             Method: ANY
+
+
