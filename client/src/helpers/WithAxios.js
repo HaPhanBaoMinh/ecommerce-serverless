@@ -26,7 +26,7 @@ const WithAxios = ({ children }) => {
             try {
               originalRequest._retry = true;
               const res = await API.post("/auth/refresh-token");
-              localStorage.setItem("token", JSON.stringify(res.data.token));
+              // localStorage.setItem("token", JSON.stringify(res.data.token));
               return API(originalRequest);
             } catch (error) {
               localStorage.removeItem("token");

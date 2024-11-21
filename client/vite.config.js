@@ -20,6 +20,9 @@ export default defineConfig({
       ...absolutePathAliases,
     },
   },
+  define: {
+    global: {},
+  },
   plugins: [react()],
   server: {
     watch: {

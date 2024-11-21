@@ -13,12 +13,15 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import PulseLoader from "react-spinners/PulseLoader";
-import authService from "services/auth.service";
+import { forgotPassword } from "services/cognito.service";
+import { Navigate } from "react-router-dom";
 
 const ForgotPasswordModal = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [success, setSuccess] = useState(false)
+
   const {
     handleSubmit,
     register,
@@ -30,23 +33,26 @@ const ForgotPasswordModal = () => {
     setIsOpen(!isOpen);
   };
 
-  const onSubmitReset = (data) => {
+  const onSubmitReset = async (data) => {
     setMsg("");
     setIsSending(true);
-    authService
-      .forgotPassword(data.email)
-      .then((data) => {
-        if (data.data.status === "OK") {
-          setIsSending(false);
-          toast.success("Email has been sent successfully.");
-          setIsOpen(false);
-        }
-      })
-      .catch((error) => {
-        setIsSending(false);
-        setMsg(error.response.data.message);
-      });
+    forgotPassword(data.email).then((data) => {
+      setIsSending(false);
+      toast.success("Email has been sent successfully.");
+      setIsOpen(false);
+      setSuccess(true)
+    }).catch((error) => {
+      setIsSending(false);
+      setMsg(error.message);
+      setIsOpen(false);
+      setSuccess(false)
+    });
   };
+
+  if (success) {
+    return <Navigate to="/reset-password" />;
+  }
+
   return (
     <div>
       <>

@@ -6,27 +6,26 @@ import { useState } from "react";
 import { Edit2 } from "react-feather";
 import toast from "react-hot-toast";
 import PulseLoader from "react-spinners/PulseLoader";
-import authService from "services/auth.service";
+import { forgotPassword, signOut } from "services/cognito.service";
+import { useNavigate } from "react-router-dom";
 
 const Account = () => {
-  const { userData } = useUser();
+  const { userData, logout } = useUser();
   const [showSettings, setShowSettings] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const navigate = useNavigate();
 
   const resetPassword = () => {
-    setIsSending(true);
-    authService
-      .forgotPassword(userData.email)
-      .then((data) => {
-        if (data.data.status === "OK") {
-          setIsSending(false);
-          toast.success("Email has been sent successfully.");
-        }
-      })
-      .catch(() => {
-        setIsSending(false);
-        toast.error("An error occured. Please try again.");
-      });
+    forgotPassword(userData.email).then((data) => {
+      setIsSending(false);
+      toast.success("Email has been sent successfully.");
+      logout();
+      navigate("/reset-password");
+    }).catch((error) => {
+      console.log(error);
+      toast.error("Error sending email");
+      setIsSending(false);
+    });
   };
 
   return (
@@ -42,12 +41,6 @@ const Account = () => {
             </div>
             <div className="border-t border-gray-200">
               <dl>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Full name</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {userData?.fullname}
-                  </dd>
-                </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Username</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
@@ -72,30 +65,7 @@ const Account = () => {
                     </Button>
                   </dd>
                 </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Address</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {userData?.address}
-                  </dd>
-                </div>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">City</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {userData?.city}
-                  </dd>
-                </div>
-                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">State</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {userData?.state}
-                  </dd>
-                </div>
-                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Country</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {userData?.country}
-                  </dd>
-                </div>
+
                 <div className="bg-gray-50 px-4 py-5">
                   <Button iconRight={Edit2} onClick={(e) => setShowSettings(!showSettings)}>
                     {" "}

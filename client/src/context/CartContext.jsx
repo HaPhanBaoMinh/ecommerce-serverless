@@ -13,6 +13,7 @@ const CartProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
+    return
     setIsLoading(true);
     if (isLoggedIn) {
       const saveLocalCart = async () => {

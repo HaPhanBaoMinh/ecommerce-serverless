@@ -2,6 +2,7 @@ import API from "api/axios.config";
 import WithAxios from "helpers/WithAxios";
 import { createContext, useContext, useEffect, useState } from "react";
 import authService from "services/auth.service";
+import { signOut, getCurrentUser } from "services/cognito.service";
 
 const UserContext = createContext();
 
@@ -14,14 +15,18 @@ const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      authService.getCurrentUser().then((res) => setUserData(res?.data));
+      getCurrentUser().then((user) => {
+        setUserData(user);
+      });
     }
   }, [isLoggedIn]);
 
   useEffect(() => {
-    if (localStorage.getItem("token")) {
+    if (localStorage.getItem("token") && localStorage.getItem("token") !== "undefined") {
       setIsLoggedIn(true);
-      setAuthData(JSON.parse(localStorage.getItem("token")));
+      setAuthData({
+        token: localStorage.getItem("token"),
+      });
     }
   }, []);
 
@@ -45,7 +50,7 @@ const UserProvider = ({ children }) => {
     setAuthData({
       token,
     });
-    localStorage.setItem("token", JSON.stringify(token));
+    // localStorage.setItem("token", JSON.stringify(token));
   };
 
   const logout = () => {
@@ -53,6 +58,7 @@ const UserProvider = ({ children }) => {
     setAuthData(null);
     setIsLoggedIn(false);
     authService.logout();
+    signOut();
   };
 
   return (

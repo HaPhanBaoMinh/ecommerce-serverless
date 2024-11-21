@@ -1,14 +1,14 @@
-import API from "api/axios.config";
+import { APIWithouToken } from "api/axios.config";
 
 class ProductService {
   getProducts(page) {
-    return API.get(`/products/?page=${page}`);
+    return APIWithouToken.get(`/products/?page=${page}`);
   }
   getProduct(id) {
-    return API.get(`/products/${id}`);
+    return APIWithouToken.get(`/products/${id}`);
   }
   getProductByName(name) {
-    return API.get(`/products/${name}`);
+    return APIWithouToken.get(`/products/${name}`);
   }
 }
 

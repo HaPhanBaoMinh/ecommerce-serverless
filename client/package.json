@@ -15,6 +15,7 @@
     "@stripe/react-stripe-js": "^2.4.0",
     "@stripe/stripe-js": "^2.2.2",
     "@windmill/react-ui": "^0.6.0",
+    "amazon-cognito-identity-js": "^6.3.12",
     "axios": "^1.6.2",
     "date-fns": "^3.0.6",
     "history": "^5.3.0",
