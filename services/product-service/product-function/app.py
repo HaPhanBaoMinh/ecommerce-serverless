@@ -82,15 +82,16 @@ def response(status_code, body):
         "statusCode": status_code,
         "body": json.dumps(body),
         "headers": {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
         }
     }
 
 def connect_to_dynamodb():
-    if os.environ['DYNAMODB_ENDPOINT']:
+    if os.environ['IS_LOCAL'] == 'true':
         dynamodb = boto3.resource('dynamodb', endpoint_url=os.environ['DYNAMODB_ENDPOINT'])
     else:
-        dynamodb = boto3.resource('dynamodb', region_name=os.environ['AWS_REGION'])
+        dynamodb = boto3.resource('dynamodb')
     return dynamodb
 
 def decimal_to_float(obj):

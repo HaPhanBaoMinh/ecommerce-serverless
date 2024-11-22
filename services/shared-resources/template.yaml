@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Stack to create shared API Gateway and Cognito resources
+
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: user-ecommerce
+      AutoVerifiedAttributes:
+        - email
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: user-ecommerce-client
+      GenerateSecret: false
+
+  SharedApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: Shared API Gateway
+      Name: shared-api-resource
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+    Export:
+      Name: SharedUserPoolId
+
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+    Export:
+      Name: SharedUserPoolClientId
+
+  ApiGateway:
+    Value: !Ref SharedApiGateway
+    Export:
+      Name: SharedApiGateway
+
+  ApiGatewayResourceId:
+    Value: !GetAtt SharedApiGateway.RootResourceId
+    Export:
+      Name: SharedApiGatewayResourceId

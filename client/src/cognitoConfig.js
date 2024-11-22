@@ -1,4 +1,4 @@
 export const cognitoConfig = {
-    UserPoolId: "ap-southeast-1_v1ASSlT1V",
-    ClientId: "4nsh2lthqeqgmjhopd4f5h62pd",
+    UserPoolId: import.meta.env.VITE_USER_POOL_ID,
+    ClientId: import.meta.env.VITE_USER_POOL_CLIENT_ID,
 };

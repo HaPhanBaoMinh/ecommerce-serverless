@@ -1,9 +1,12 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.PROD ? import.meta.env.VITE_API_URL : "http://localhost:9000";
+const baseURL = import.meta.env.VITE_PRODUCTION ? import.meta.env.VITE_API_URL : "http://localhost:9000";
 
 const API = axios.create({
   baseURL,
+  headers: {
+    'Access-Control-Allow-Origin': '*',
+  }
 });
 
 API.interceptors.request.use(

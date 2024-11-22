@@ -17,7 +17,11 @@ const UserProvider = ({ children }) => {
     if (isLoggedIn) {
       getCurrentUser().then((user) => {
         setUserData(user);
-      });
+      })
+        .catch((err) => {
+          console.log(err);
+          logout();
+        });
     }
   }, [isLoggedIn]);
 

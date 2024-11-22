@@ -3,7 +3,7 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "ProductService"
+stack_name = "product-service"
 
 [default.build.parameters]
 cached = true
