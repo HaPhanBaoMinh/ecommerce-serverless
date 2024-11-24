@@ -1,44 +1,92 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: >
-  cart-service
+Description: Cart CRUD Service
 
-  Sample SAM Template for cart-service
-
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
-Globals:
-  Function:
-    Timeout: 3
-
-    # You can add LoggingConfig parameters such as the Logformat, Log Group, and SystemLogLevel or ApplicationLogLevel. Learn more here https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-resource-function.html#sam-function-loggingconfig.
-    LoggingConfig:
-      LogFormat: JSON
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  cart:
+    Type: AWS::DynamoDB::Table
     Properties:
-      CodeUri: ./cart-function
-      Handler: app.lambda_handler
-      Runtime: python3.12
-      Architectures:
-      - x86_64
-      Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
+      TableName: Cart
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
 
-Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: API Gateway endpoint URL for Prod stage for Hello World function
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: Hello World Lambda Function ARN
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: Implicit IAM Role created for Hello World function
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  cartFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: cart.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./cart-function
+      Timeout: 60
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref cart
+          IS_LOCAL: "true"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref cart
+
+  # /cart
+  cartResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !ImportValue SharedApiGatewayResourceId
+      RestApiId: !ImportValue SharedApiGateway
+      PathPart: "cart"
+
+  # /cart/{id}
+  cartWithIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref cartResource
+      RestApiId: !ImportValue SharedApiGateway
+      PathPart: "{id}"
+
+  apiGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: "cart-authorizer"
+      Type: "COGNITO_USER_POOLS"
+      IdentitySource: "method.request.header.Authorization"
+      RestApiId: !ImportValue SharedApiGateway
+      ProviderARNs:
+        - !ImportValue SharedCognitoUserPoolArn
+
+  apiGatewayCartResource:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref apiGatewayAuthorizer
+      AuthorizationScopes:
+        - "openid"
+      HttpMethod: ANY
+      ResourceId: !Ref cartResource
+      RestApiId: !ImportValue SharedApiGateway
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS_PROXY
+        Uri: !Sub
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+          - FunctionArn: !GetAtt cartFunction.Arn
+
+  lambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt cartFunction.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiId}/*/*"
+        - RestApiId: !ImportValue SharedApiGateway
+
+  apiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !ImportValue SharedApiGateway
+      StageName: prod
+

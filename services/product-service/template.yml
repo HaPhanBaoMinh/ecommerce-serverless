@@ -18,7 +18,7 @@ Resources:
   productFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: app.lambda_handler
+      Handler: product.lambda_handler
       Runtime: python3.12
       CodeUri: ./product-function
       Timeout: 60
@@ -26,6 +26,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref product
           IS_LOCAL: "false"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref product

@@ -59,6 +59,7 @@ export function signIn(username, password) {
 
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: (result) => {
+                console.log("signIn result", result)
                 resolve(result)
             },
             onFailure: (err) => {

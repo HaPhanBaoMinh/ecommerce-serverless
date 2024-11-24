@@ -4,7 +4,7 @@
 
 Create table:
 ```bash
-aws dynamodb create-table --cli-input-json file://table.json --endpoint-url http://localhost:8000
+aws dynamodb create-table --cli-input-json file://product.json --endpoint-url http://localhost:8000
 ```
 
 List tables:
@@ -35,5 +35,5 @@ sam build && sam local start-api --docker-network dynamodb-local-network --port 
 ## Init data
 
 ```bash
-aws dynamodb batch-write-item --request-items file://product.json --endpoint-url http://localhost:8000
+aws dynamodb batch-write-item --request-items file://data.json --endpoint-url http://localhost:8000
 ```

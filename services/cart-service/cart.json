@@ -1,14 +1,18 @@
 {
-    "TableName": "Product",
+    "TableName": "Cart",
     "AttributeDefinitions": [
         {
-            "AttributeName": "product_id",
+            "AttributeName": "id",
+            "AttributeType": "S"
+        },
+        {
+            "AttributeName": "user_id",
             "AttributeType": "S"
         }
     ],
     "KeySchema": [
         {
-            "AttributeName": "product_id",
+            "AttributeName": "user_id",
             "KeyType": "HASH"
         }
     ],

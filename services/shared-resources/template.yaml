@@ -43,3 +43,13 @@ Outputs:
     Value: !GetAtt SharedApiGateway.RootResourceId
     Export:
       Name: SharedApiGatewayResourceId
+
+  CognitoUserPoolArn:
+    Value: !GetAtt UserPool.Arn
+    Export:
+      Name: SharedCognitoUserPoolArn
+
+  CognitoUserPoolId:
+    Value: !GetAtt UserPool.UserPoolId
+    Export:
+      Name: SharedCognitoUserPoolId

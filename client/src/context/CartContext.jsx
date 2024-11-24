@@ -13,21 +13,24 @@ const CartProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    return
     setIsLoading(true);
     if (isLoggedIn) {
-      const saveLocalCart = async () => {
-        const cartObj = localCart
-          .getItems()
-          .map(({ product_id, quantity }) => cartService.addToCart(product_id, quantity));
-        await Promise.all(cartObj);
-        localCart.clearCart();
-        cartService.getCart().then((res) => {
-          setCartData(res?.data);
-          setIsLoading(false);
-        });
-      };
-      saveLocalCart();
+      // const saveLocalCart = async () => {
+      //   const cartObj = localCart
+      //     .getItems()
+      //     .map(({ product_id, quantity }) => cartService.addToCart(product_id, quantity));
+      //   await Promise.all(cartObj);
+      //   localCart.clearCart();
+      //   cartService.getCart().then((res) => {
+      //     setCartData(res?.data);
+      //     setIsLoading(false);
+      //   });
+      // };
+      cartService.getCart().then((res) => {
+        setCartData(res?.data);
+        setIsLoading(false);
+      });
+      // saveLocalCart();
     } else {
       const items = localCart.getItems();
       if (items === null) {

@@ -1,6 +1,7 @@
 import { APIWithouToken } from "api/axios.config";
 
 class ProductService {
+
   getProducts(page) {
     return APIWithouToken.get(`/products/?page=${page}`);
   }
