@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import API from "api/axios.config";
 import { useUser } from "context/UserContext";
 import history from "helpers/history";
+import { refreshToken } from "services/cognito.service";
 
 const WithAxios = ({ children }) => {
   const { setIsLoggedIn, setUserData, setAuthData, isLoggedIn } = useUser();
@@ -12,7 +13,7 @@ const WithAxios = ({ children }) => {
         (response) => response,
         async (error) => {
           const originalRequest = error.config;
-          if (error.response.status === 401 && originalRequest.url === "/auth/refresh-token") {
+          if (error.response.status === 401 && originalRequest.url === "/auth/refresh") {
             return new Promise((resolve, reject) => {
               setIsLoggedIn(false);
               setAuthData(null);
@@ -25,7 +26,7 @@ const WithAxios = ({ children }) => {
           if (error.response.status === 401 && !originalRequest._retry) {
             try {
               originalRequest._retry = true;
-              const res = await API.post("/auth/refresh-token");
+              const res = await refreshToken();
               // localStorage.setItem("token", JSON.stringify(res.data.token));
               return API(originalRequest);
             } catch (error) {

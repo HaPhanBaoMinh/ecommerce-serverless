@@ -59,7 +59,6 @@ export function signIn(username, password) {
 
         cognitoUser.authenticateUser(authenticationDetails, {
             onSuccess: (result) => {
-                console.log("signIn result", result)
                 resolve(result)
             },
             onFailure: (err) => {
@@ -175,3 +174,25 @@ export function updateLocalStore() {
     })
 }
 
+export function refreshToken() {
+    return new Promise((resolve, reject) => {
+        const cognitoUser = userPool.getCurrentUser()
+        if (!cognitoUser) {
+            reject(new Error("No user found"))
+            return
+        }
+        cognitoUser.getSession((err, session) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            cognitoUser.refreshSession(session.getRefreshToken(), (err, session) => {
+                if (err) {
+                    reject(err)
+                    return
+                }
+                resolve(session)
+            })
+        })
+    })
+}

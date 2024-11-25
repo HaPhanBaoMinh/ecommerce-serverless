@@ -1,20 +1,33 @@
 import { Button, TableCell } from "@windmill/react-ui";
 import { useCart } from "context/CartContext";
 import { formatCurrency } from "helpers/formatCurrency";
+import { useEffect } from "react";
+import { useState } from "react";
+import { useProduct } from "context/ProductContext";
 
 const CartItem = ({ item }) => {
   const { decrement, increment, deleteItem } = useCart();
+  const [cartItemDetails, setCartItemDetails] = useState(item);
+  const { getProductById } = useProduct();
+
+  useEffect(() => {
+    const product = getProductById(item.product_id);
+    product.subtotal = product.price * item.quantity;
+    setCartItemDetails({ ...item, ...product });
+  }, []);
+
 
   const increase = () => {
     increment(item.product_id);
   };
+
   const decrease = () => {
     decrement(item.product_id);
   };
   return (
     <>
-      <TableCell>{item.name}</TableCell>
-      <TableCell>{formatCurrency(item.price)}</TableCell>
+      <TableCell>{cartItemDetails.product_name}</TableCell>
+      <TableCell>{formatCurrency(cartItemDetails.price)}</TableCell>
       <TableCell className="flex items-center">
         <Button
           size="small"
@@ -29,9 +42,9 @@ const CartItem = ({ item }) => {
           +
         </Button>
       </TableCell>
-      <TableCell>{formatCurrency(item.subtotal)}</TableCell>
+      <TableCell>{formatCurrency(cartItemDetails.subtotal)}</TableCell>
       <TableCell>
-        <Button layout="Link" onClick={() => deleteItem(item.product_id)}>
+        <Button layout="Link" onClick={() => deleteItem(cartItemDetails.product_id)}>
           <span>X</span>
         </Button>
       </TableCell>

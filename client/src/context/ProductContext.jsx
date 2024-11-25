@@ -16,9 +16,22 @@ const ProductProvider = ({ children }) => {
     });
   }, [page]);
 
+  const getProductById = (id) => {
+    if (!id) {
+      throw new Error("Product ID is required");
+    }
+
+    if (!products) {
+      return null;
+    }
+
+    const product = products.find((product) => product.product_id === id);
+    return product;
+  }
+
   return (
     <ProductContext.Provider
-      value={{ products, setProducts, isLoading, setIsLoading, page, setPage }}
+      value={{ products, setProducts, isLoading, setIsLoading, page, setPage, getProductById }}
     >
       {children}
     </ProductContext.Provider>

@@ -5,22 +5,50 @@ class CartService {
     return API.get("/cart");
   }
 
-  async addToCart(product_id, quantity) {
-    return await API.post("/cart/add", { product_id, quantity });
+  async addToCart(data) {
+
+    if (!data?.items) {
+      return;
+    }
+
+    const body = {
+      items: data.items.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+      })),
+    }
+    await API.post("/cart", body);
+    return body.items;
   }
 
-  async removeFromCart(product_id) {
-    return await API.delete("/cart/delete", {
-      data: { product_id: Number(product_id) },
-    });
+  async removeFromCart(data) {
+    const body = {
+      items: data.items.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+      })),
+    }
+    return await API.post("/cart", body);
   }
 
-  async increment(product_id) {
-    return API.put("/cart/increment", { product_id });
+  async increment(data) {
+    const body = {
+      items: data.items.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+      })),
+    }
+    return API.post("/cart", body);
   }
 
-  async decrement(product_id) {
-    return API.put("/cart/decrement", { product_id });
+  async decrement(data) {
+    const body = {
+      items: data.items.map((item) => ({
+        product_id: item.product_id,
+        quantity: item.quantity,
+      })),
+    }
+    return API.post("/cart", body);
   }
 }
 
