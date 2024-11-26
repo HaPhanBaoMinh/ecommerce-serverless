@@ -1,42 +1,105 @@
+import boto3
+import os
 import json
+from botocore.exceptions import ClientError
+import uuid
+from datetime import datetime
 
 # import requests
 
-
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    # Connect to DynamoDB
+    dynamodb = connect_to_dynamodb()
+    table_name = os.environ['TABLE_NAME']
+    table = dynamodb.Table(table_name)
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    record = event['Records']
+    # Handle the HTTP method
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+    try:
+        for r in record:
+            body = json.loads(r['body'])
+            order_id = str(uuid.uuid4())
+            body['order_id'] = order_id
+            body['status'] = 'pending'
+            body['order_date'] = datetime.now().isoformat()
+            
+            # Check price and quantity
+            items = body.get('items', [])
+            total_price = 0
+            amount = 0
 
-    context: object, required
-        Lambda Context runtime methods and attributes
+            for item in items:
+                product_id = item.get('product_id')
+                quantity = item.get('quantity')
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
+                print(f"Checking product ID: {product_id} and quantity: {quantity}")
 
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
+                if not product_id or quantity is None:
+                    print("Invalid input: 'product_id' and 'quantity' are required for all items.")
+                    return {
+                        "statusCode": 400,
+                        "body": json.dumps({"message": "Invalid input: 'product_id' and 'quantity' are required for all items."})
+                    }
 
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
+                product_table = dynamodb.Table(os.environ['PRODUCT_TABLE_NAME'])
+                product = product_table.get_item(Key={'product_id': product_id}).get('Item')
 
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
+                print(f"Product: {product}")
 
-    #     raise e
+                if not product:
+                    print(f"Product with ID '{product_id}' not found.")
+                    return {
+                        "statusCode": 404,
+                        "body": json.dumps({"message": f"Product with ID '{product_id}' not found."})
+                    }
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+                if product.get('quantity', 0) < quantity:
+                    print(f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}")
+                    body['status'] = 'failed'
+                    body['message'] = f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}"
+                    table.put_item(Item=body)   
+                    return {
+                        "statusCode": 400,
+                        "body": json.dumps({"message": f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}"})
+                    }
+
+                # Calculate total price
+                total_price += product['price'] * quantity
+                amount += quantity
+                
+                # # Update stock
+                product_table.update_item(
+                    Key={'product_id': product_id},
+                    UpdateExpression="SET quantity = quantity - :quantity",
+                    ExpressionAttributeValues={':quantity': quantity}
+                )
+
+            body['total_price'] = total_price
+            body['amount'] = amount
+            table.put_item(Item=body)
+
+            print("Order placed successfully")
+
+            return {
+                "statusCode": 201,
+                "body": json.dumps({"message": "Order placed successfully", "order_id": order_id})
+            }
+
+    except Exception as e:
+        print("Error occurred:", str(e))
+        return {
+            "statusCode": 500,
+            "body": json.dumps({
+                "message": "Internal Server Error",
+                "error": str(e)
+            })
+        }
+
+def connect_to_dynamodb():
+    if os.environ['IS_LOCAL'] == 'true':
+        dynamodb = boto3.resource('dynamodb', endpoint_url=os.environ['DYNAMODB_ENDPOINT'])
+    else:
+        dynamodb = boto3.resource('dynamodb')
+    return dynamodb
+
