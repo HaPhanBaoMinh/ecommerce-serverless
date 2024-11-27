@@ -56,7 +56,7 @@ const Orders = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.map((order) => (
+            {orders?.reverse().map((order) => (
               <TableRow
                 className="cursor-pointer"
                 onClick={() => goToDetails(order)}
