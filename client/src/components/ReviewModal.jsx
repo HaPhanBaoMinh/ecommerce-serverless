@@ -28,6 +28,7 @@ const ReviewModal = ({ product_id, reviews }) => {
   const navigate = useNavigate();
 
   const addReview = () => {
+    return toast.error("Not implemented");
     reviewService
       .addReview(product_id, rating, content)
       .then(() => {

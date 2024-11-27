@@ -13,21 +13,21 @@ const WithAxios = ({ children }) => {
         (response) => response,
         async (error) => {
           const originalRequest = error.config;
-          if (error?.response?.status === 401 && originalRequest.url === "/auth/refresh") {
-            return new Promise((resolve, reject) => {
-              setIsLoggedIn(false);
-              setAuthData(null);
-              setUserData(null);
-              history.push("/login");
-              reject(error);
-            });
-          }
+          // if (error?.response?.status === 403) {
+          //   return new Promise((resolve, reject) => {
+          //     setIsLoggedIn(false);
+          //     setAuthData(null);
+          //     setUserData(null);
+          //     localStorage.removeItem("token");
+          //     reject(error);
+          //   });
+          // }
 
           if (error?.response?.status === 401 && !originalRequest._retry) {
             try {
               originalRequest._retry = true;
               const res = await refreshToken();
-              // localStorage.setItem("token", JSON.stringify(res.data.token));
+              localStorage.setItem("token", res.idToken.jwtToken);
               return API(originalRequest);
             } catch (error) {
               localStorage.removeItem("token");

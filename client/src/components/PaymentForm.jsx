@@ -50,8 +50,11 @@ const PaymentForm = ({ previousStep, addressData, nextStep }) => {
           }
         },
       });
+
       const orderId = result.paymentMethod.id
       await OrderService.createOrder(cartData.items, addressDetails, "STRIPE", userData.sub, orderId)
+
+      console.log(orderId);
 
       if (result.error) {
         setError(result.error);
@@ -62,33 +65,35 @@ const PaymentForm = ({ previousStep, addressData, nextStep }) => {
 
 
       // Call api get get client_secret
+      let count = 0;
       let idInterval = setInterval(async () => {
         const response = await OrderService.checkStatus(orderId);
+        if (count > 5) {
+          clearInterval(idInterval);
+          return;
+        }
         if (response?.data.client_secret) {
           const { data } = response;
           if (!data?.client_secret) return;
           await stripe.confirmCardPayment(data.client_secret, {
-            payment_method: result.paymentMethod.id,
+            payment_method: orderId,
           }).catch((error) => {
             console.log(error);
+            count++;
             throw error;
           });
           clearInterval(idInterval);
         }
       }, 1000 * 5);
 
-
-
-      // setCartData({ items: [] });
+      setCartData({ items: [] });
       setIsProcessing(false);
-      setTimeout(() => {
-        navigate("/cart/success", {
-          state: {
-            fromPaymentPage: true,
-            order_id: result.paymentMethod.id,
-          },
-        });
-      }, 1000);
+      navigate("/cart/success", {
+        state: {
+          fromPaymentPage: true,
+          order_id: orderId,
+        },
+      });
 
     } catch (error) {
       console.log(error);
