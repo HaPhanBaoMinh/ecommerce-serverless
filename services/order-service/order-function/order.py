@@ -4,26 +4,26 @@ import json
 from botocore.exceptions import ClientError
 import uuid
 from datetime import datetime
+import stripe
 
-# import requests
+# Get Stripe API Key
+stripe.api_key = os.environ['STRIPE_SECRET_KEY']
 
 def lambda_handler(event, context):
     # Connect to DynamoDB
     dynamodb = connect_to_dynamodb()
     table_name = os.environ['TABLE_NAME']
     table = dynamodb.Table(table_name)
-
     record = event['Records']
-    # Handle the HTTP method
 
     try:
         for r in record:
             body = json.loads(r['body'])
-            order_id = str(uuid.uuid4())
-            body['order_id'] = order_id
             body['status'] = 'pending'
             body['order_date'] = datetime.now().isoformat()
-            
+            table.put_item(Item=body)
+            order_id = body['order_id']
+
             # Check price and quantity
             items = body.get('items', [])
             total_price = 0
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                     print(f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}")
                     body['status'] = 'failed'
                     body['message'] = f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}"
-                    table.put_item(Item=body)   
+                    table.put_item(Item=body)
                     return {
                         "statusCode": 400,
                         "body": json.dumps({"message": f"Not enough stock for product ID '{product_id}'. Requested: {quantity}, Available: {product.get('quantity', 0)}"})
@@ -67,8 +67,8 @@ def lambda_handler(event, context):
                 # Calculate total price
                 total_price += product['price'] * quantity
                 amount += quantity
-                
-                # # Update stock
+
+                # Update stock
                 product_table.update_item(
                     Key={'product_id': product_id},
                     UpdateExpression="SET quantity = quantity - :quantity",
@@ -78,12 +78,28 @@ def lambda_handler(event, context):
             body['total_price'] = total_price
             body['amount'] = amount
             table.put_item(Item=body)
+            description = f"Order {order_id} - {amount} items"
+            metadata = {
+                "order_id": order_id,
+                "user_id": body.get("user_id")
+            }
+
+            # Create Payment Intent
+            payment_intent = create_payment_intent(total_price, "usd", description, metadata)
+            body['payment_intent_id'] = payment_intent.get("id")
+            body['client_secret'] = payment_intent.get("client_secret")
+            table.put_item(Item=body)
 
             print("Order placed successfully")
 
             return {
                 "statusCode": 201,
-                "body": json.dumps({"message": "Order placed successfully", "order_id": order_id})
+                "body": json.dumps({
+                    "message": "Order placed successfully",
+                    "order_id": order_id,
+                    "client_secret": payment_intent.get("client_secret"),
+                    "payment_intent_id": payment_intent.get("id")
+                })
             }
 
     except Exception as e:
@@ -103,3 +119,20 @@ def connect_to_dynamodb():
         dynamodb = boto3.resource('dynamodb')
     return dynamodb
 
+def create_payment_intent(amount, currency, description, metadata):
+    """
+    Tạo Payment Intent với Stripe
+    """
+    try:
+        # Stripe requires the amount to be in cents
+        payment_intent = stripe.PaymentIntent.create(
+            amount=int(amount * 100),  # Convert to cents
+            currency=currency,
+            description=description,
+            metadata=metadata,
+        )
+        print("Payment Intent created:", payment_intent)
+        return payment_intent
+    except Exception as e:
+        print("Stripe error occurred:", str(e))
+        raise e

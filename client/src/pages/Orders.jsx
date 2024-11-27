@@ -56,7 +56,7 @@ const Orders = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.items.map((order) => (
+            {orders?.map((order) => (
               <TableRow
                 className="cursor-pointer"
                 onClick={() => goToDetails(order)}
@@ -67,14 +67,14 @@ const Orders = () => {
             ))}
           </TableBody>
         </Table>
-        <TableFooter>
+        {/* <TableFooter>
           <Pagination
             totalResults={orders?.total}
             resultsPerPage={5}
             onChange={handlePage}
             label="Table navigation"
           />
-        </TableFooter>
+        </TableFooter> */}
       </TableContainer>
     </Layout>
   );

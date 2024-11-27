@@ -1,19 +1,25 @@
 import API from "api/axios.config";
+import { add } from "date-fns";
 
 class OrderService {
-  createOrder(amount, itemTotal, ref, paymentMethod) {
-    return API.post("/orders/create", {
-      amount,
-      itemTotal,
-      ref,
+  createOrder(items, address, paymentMethod, user_id, order_id) {
+    console.log(items, address, paymentMethod, user_id);
+    return API.post("/order", {
+      items,
+      address,
       paymentMethod,
+      user_id,
+      order_id,
     });
   }
   getAllOrders(page) {
-    return API.get(`/orders/?page=${page}`);
+    return API.get(`/order`);
   }
   getOrder(id) {
-    return API.get(`/orders/${id}`);
+    return API.get(`/order/${id}`);
+  }
+  checkStatus(id) {
+    return API.get(`/order/${id}`);
   }
 }
 

@@ -3,6 +3,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "1"
                     },
@@ -27,6 +30,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "2"
                     },
@@ -51,6 +57,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "3"
                     },
@@ -75,6 +84,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "4"
                     },
@@ -99,6 +111,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "5"
                     },
@@ -123,6 +138,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "6"
                     },
@@ -147,6 +165,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "7"
                     },
@@ -171,6 +192,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "8"
                     },
@@ -195,6 +219,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "9"
                     },
@@ -219,6 +246,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "10"
                     },
@@ -243,6 +273,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "11"
                     },
@@ -267,6 +300,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "12"
                     },
@@ -291,6 +327,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "13"
                     },
@@ -315,6 +354,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "14"
                     },
@@ -339,6 +381,9 @@
         {
             "PutRequest": {
                 "Item": {
+                    "quantity": {
+                        "N": "30"
+                    },
                     "product_id": {
                         "S": "15"
                     },

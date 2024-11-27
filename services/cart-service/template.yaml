@@ -89,4 +89,3 @@ Resources:
     Properties:
       RestApiId: !ImportValue SharedApiGateway
       StageName: prod
-

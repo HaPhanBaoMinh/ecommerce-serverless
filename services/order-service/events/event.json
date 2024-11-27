@@ -1,62 +1,21 @@
 {
-  "body": "{\"message\": \"hello world\"}",
-  "resource": "/hello",
-  "path": "/hello",
-  "httpMethod": "GET",
-  "isBase64Encoded": false,
-  "queryStringParameters": {
-    "foo": "bar"
-  },
-  "pathParameters": {
-    "proxy": "/path/to/resource"
-  },
-  "stageVariables": {
-    "baz": "qux"
-  },
-  "headers": {
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Encoding": "gzip, deflate, sdch",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Cache-Control": "max-age=0",
-    "CloudFront-Forwarded-Proto": "https",
-    "CloudFront-Is-Desktop-Viewer": "true",
-    "CloudFront-Is-Mobile-Viewer": "false",
-    "CloudFront-Is-SmartTV-Viewer": "false",
-    "CloudFront-Is-Tablet-Viewer": "false",
-    "CloudFront-Viewer-Country": "US",
-    "Host": "1234567890.execute-api.us-east-1.amazonaws.com",
-    "Upgrade-Insecure-Requests": "1",
-    "User-Agent": "Custom User Agent String",
-    "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
-    "X-Amz-Cf-Id": "cDehVQoZnx43VYQb9j2-nvCh-9z396Uhbp027Y2JvkCPNLmGJHqlaA==",
-    "X-Forwarded-For": "127.0.0.1, 127.0.0.2",
-    "X-Forwarded-Port": "443",
-    "X-Forwarded-Proto": "https"
-  },
-  "requestContext": {
-    "accountId": "123456789012",
-    "resourceId": "123456",
-    "stage": "prod",
-    "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
-    "requestTime": "09/Apr/2015:12:34:56 +0000",
-    "requestTimeEpoch": 1428582896000,
-    "identity": {
-      "cognitoIdentityPoolId": null,
-      "accountId": null,
-      "cognitoIdentityId": null,
-      "caller": null,
-      "accessKey": null,
-      "sourceIp": "127.0.0.1",
-      "cognitoAuthenticationType": null,
-      "cognitoAuthenticationProvider": null,
-      "userArn": null,
-      "userAgent": "Custom User Agent String",
-      "user": null
-    },
-    "path": "/prod/hello",
-    "resourcePath": "/hello",
-    "httpMethod": "POST",
-    "apiId": "1234567890",
-    "protocol": "HTTP/1.1"
-  }
+  "Records": [
+    {
+      "messageId": "7d382467-3f24-4f81-85b0-476d29ae10f0",
+      "receiptHandle": "AQEBKip3Sapy3JG20bxjDgz2MBAndX2qYjDvT7ToxJFJvN8No3up0ERVmtle+tL52qmQu4ep1N3v6D97DRodovG5uJV8U7R9jspf/L92zK4NmLImhfOtGhte1x+NyclmhvIiTBhPTuTMB9qPLZTQt5HEka14V2G91nhDJeMjTEMJoHiNXxJRVUV9GqJB+NSp3DO4iqvBL8tHGT3JlSa57J+zTvVpcuKvJCv39PaoP6q4OPKHfzyI2T2mVXIGv8HCI0ObQ9sdTiTAa4ILxLhpYiilBm6C57+3qVK3l1YjyH5Imy/0yklCuN5F4ASYuljfV+KB+chBYJP4Hi+SdqV4qwPRzpcc99FutiEeookIzu+U5bAzAAs/O9F/PQ73U/pkz7dCfrAXnSN8MtcbCoNOWcJyrw==",
+      "body": "{'items':[{'product_id':'13','quantity':1},{'product_id':'8','quantity':1}],'address':{'city':'Tp.HCM','line1':'Tp. HCM','state':'Thành phố Hồ Chí Minh','country':'Vietnam'},'paymentMethod':'STRIPE','user_id':'f98a25fc-e0f1-7029-6320-1fdd644df680'}",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "AWSTraceHeader": "Root=1-6745e26b-63c0ed542dd6025222554204",
+        "SentTimestamp": "1732633195864",
+        "SenderId": "AROAQMEY6GCV3W5ZYCIOM:BackplaneAssumeRoleSession",
+        "ApproximateFirstReceiveTimestamp": "1732633195865"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "e0a3d342a04abcb588f7046c0a972b6c",
+      "eventSource": "aws:sqs",
+      "eventSourceARN": "arn:aws:sqs:ap-southeast-1:026090549419:order-queue",
+      "awsRegion": "ap-southeast-1"
+    }
+  ]
 }

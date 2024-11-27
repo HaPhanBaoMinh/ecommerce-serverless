@@ -6,12 +6,20 @@ const OrderItem = ({ order }) => {
   return (
     <>
       <TableCell>#{order.order_id}</TableCell>
-      <TableCell>{order.total || "Not available"}</TableCell>
+      <TableCell>{order.amount || "Not available"}</TableCell>
       <TableCell>
-        <Badge type="success">{order.status}</Badge>{" "}
+        {
+          order.status === "pending" ? (
+            <Badge type="warning">Pending</Badge>
+          ) : order.status === "succeeded" ? (
+            <Badge type="success">Succeeded</Badge>
+          ) : (
+            <Badge type="danger">Failed</Badge>
+          )
+        }
       </TableCell>
-      <TableCell>{formatCurrency(order.amount)}</TableCell>
-      <TableCell>{format(parseISO(order.date), "dd/MM/yy")}</TableCell>
+      <TableCell>{formatCurrency(order.total_price)}</TableCell>
+      <TableCell>{format(parseISO(order?.order_date), "dd/MM/yy")}</TableCell>
     </>
   );
 };

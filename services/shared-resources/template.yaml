@@ -23,6 +23,16 @@ Resources:
       Description: Shared API Gateway
       Name: shared-api-resource
 
+  ApiGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: "cart-authorizer"
+      Type: "COGNITO_USER_POOLS"
+      IdentitySource: "method.request.header.Authorization"
+      RestApiId: !ImportValue SharedApiGateway
+      ProviderARNs:
+        - !ImportValue SharedCognitoUserPoolArn
+
 Outputs:
   UserPoolId:
     Value: !Ref UserPool
@@ -53,3 +63,8 @@ Outputs:
     Value: !GetAtt UserPool.UserPoolId
     Export:
       Name: SharedCognitoUserPoolId
+
+  ApiGatewayAuthorizer:
+    Value: !Ref ApiGatewayAuthorizer
+    Export:
+      Name: SharedApiGatewayAuthorizer

@@ -25,7 +25,9 @@ const Product = ({ product }) => {
     }
   };
   return (
-    <Link to={`/products/${product.slug}-${product.product_id}`}>
+    <Link to={`/products/${product.slug
+      || `${product.product_name.replace(/\s+/g, "-").toLowerCase()}`
+      }-${product.product_id}`}>
       <div className="group">
         <span className="block relative h-48 rounded overflow-hidden">
           <img

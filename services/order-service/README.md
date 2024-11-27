@@ -38,4 +38,11 @@ sam build && sam local start-api --docker-network dynamodb-local-network --port 
 aws dynamodb batch-write-item --request-items file://data.json --endpoint-url http://localhost:8000
 ```
 
+## Deploy
+
+```bash
 sam build && sam deploy --capabilities CAPABILITY_NAMED_IAM
+```
+
+
+

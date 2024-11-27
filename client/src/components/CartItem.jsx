@@ -12,6 +12,7 @@ const CartItem = ({ item }) => {
 
   useEffect(() => {
     const product = getProductById(item.product_id);
+    if (!product) return;
     product.subtotal = product.price * item.quantity;
     setCartItemDetails({ ...item, ...product });
   }, []);
@@ -26,8 +27,8 @@ const CartItem = ({ item }) => {
   };
   return (
     <>
-      <TableCell>{cartItemDetails.product_name}</TableCell>
-      <TableCell>{formatCurrency(cartItemDetails.price)}</TableCell>
+      <TableCell>{cartItemDetails?.product_name}</TableCell>
+      <TableCell>{formatCurrency(cartItemDetails?.price)}</TableCell>
       <TableCell className="flex items-center">
         <Button
           size="small"

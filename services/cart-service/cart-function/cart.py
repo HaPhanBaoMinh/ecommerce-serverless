@@ -16,8 +16,6 @@ def lambda_handler(event, context):
     user_id = event.get('requestContext', {}).get('authorizer', {}).get('claims', {}).get('sub')
     # Handle the HTTP method
 
-    print(event)
-
     try:
         if http_method == 'GET':
             return get_cart(table, user_id)
@@ -27,7 +25,6 @@ def lambda_handler(event, context):
             return response(400, {"message": "Inval request"})    
     except ClientError as e:
         return response(500, {"error": e.response['Error']['Message']})
-
 
 def get_cart(table, user_id):
     result = table.get_item(Key={'user_id': user_id})
@@ -43,12 +40,14 @@ def get_cart(table, user_id):
         return response(404, {"message": "cart not found"})
 
 def update_cart(body, table, user_id):
-    update_expression = "SET " + ", ".join([f"{k}=:{k}" for k in body.keys()])
+    update_expression = "SET " + ", ".join([f"#{k}=:{k}" for k in body.keys()])
+    expression_attribute_names = {f"#{k}": k for k in body.keys()}
     expression_values = {f":{k}": v for k, v in body.items()}
     
     table.update_item(
         Key={'user_id': user_id},
         UpdateExpression=update_expression,
+        ExpressionAttributeNames=expression_attribute_names,
         ExpressionAttributeValues=expression_values,
     )
     return response(200, {"message": "cart updated"})

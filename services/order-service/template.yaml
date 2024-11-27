@@ -18,6 +18,15 @@ Resources:
         - AttributeName: user_id
           KeyType: RANGE
       BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: user_id-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+            - AttributeName: order_id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   # /order
   orderResource:
@@ -26,6 +35,22 @@ Resources:
       ParentId: !ImportValue SharedApiGatewayResourceId
       RestApiId: !ImportValue SharedApiGateway
       PathPart: "order"
+
+  # /order/{order_id}
+  orderByIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !Ref orderResource
+      RestApiId: !ImportValue SharedApiGateway
+      PathPart: "{order_id}"
+
+  # /webhook
+  webhookResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      ParentId: !ImportValue SharedApiGatewayResourceId
+      RestApiId: !ImportValue SharedApiGateway
+      PathPart: "webhook"
 
   # Create SQS
   orderQueue:
@@ -61,6 +86,170 @@ Resources:
 
       MethodResponses:
         - StatusCode: 200
+
+  apiGatewayOrderByIdResource:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !ImportValue SharedApiGatewayAuthorizer
+      AuthorizationScopes:
+        - "openid"
+      ResourceId: !Ref orderByIdResource
+      RestApiId: !ImportValue SharedApiGateway
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+          - FunctionArn: !GetAtt orderStatusFunction.Arn
+
+  apiGatewayWebhookResource:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      AuthorizationType: NONE
+      ResourceId: !Ref webhookResource
+      RestApiId: !ImportValue SharedApiGateway
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+          - FunctionArn: !GetAtt webhookFunction.Arn
+
+  apiGatewayAllOrdersResource:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: GET
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !ImportValue SharedApiGatewayAuthorizer
+      ResourceId: !Ref orderResource
+      RestApiId: !ImportValue SharedApiGateway
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 
+          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${FunctionArn}/invocations"
+          - FunctionArn: !GetAtt allOrdersFunction.Arn
+
+  orderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: order.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./order-function
+      Layers:
+        - !Ref dependenciesLayer
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref order
+          IS_LOCAL: "false"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+          PRODUCT_TABLE_NAME: Product
+          STRIPE_SECRET_KEY: ""
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref order
+        - DynamoDBCrudPolicy:
+            TableName: Product
+        - SQSSendMessagePolicy:
+            QueueName: !GetAtt orderQueue.QueueName
+      Events:
+        OrderEvent:
+          Type: SQS
+          Properties:
+            Queue: 'arn:aws:sqs:ap-southeast-1:026090549419:order-queue'
+            BatchSize: 1
+
+  orderStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: status.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./order-function
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref order
+          IS_LOCAL: "false"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref order
+     
+  webhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: webhook.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./order-function
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref order
+          IS_LOCAL: "false"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+          STRIPE_SECRET_KEY: ""
+          STRIPE_ENDPOINT_SECRET: ""
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref order
+      Layers:
+        - !Ref dependenciesLayer
+  
+  allOrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: all_orders.lambda_handler
+      Runtime: python3.12
+      CodeUri: ./order-function
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref order
+          IS_LOCAL: "false"
+          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref order
+
+  allOrdersLambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt allOrdersFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*/GET/order"
+        - ApiGatewayId: !ImportValue SharedApiGateway
+
+  orderStatusLambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt orderStatusFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*/GET/order/{order_id}"
+        - ApiGatewayId: !ImportValue SharedApiGateway
+  
+  webhookLambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt webhookFunction.Arn
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*/POST/webhook"
+        - ApiGatewayId: !ImportValue SharedApiGateway
+
+  dependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: ./dependencies.zip
+      CompatibleRuntimes:
+        - python3.12
+      LayerName: "order-dependencies"
+      Description: "Dependencies for order service"
+      RetentionPolicy: "Retain"
 
   apiGatewayExecutionRole:
     Type: AWS::IAM::Role
@@ -101,28 +290,3 @@ Resources:
                   - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*/POST/order"
                   - ApiGatewayId: !ImportValue SharedApiGateway                
 
-  orderFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: order.lambda_handler
-      Runtime: python3.12
-      CodeUri: ./order-function
-      Environment:
-        Variables:
-          TABLE_NAME: !Ref order
-          IS_LOCAL: "false"
-          DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
-          PRODUCT_TABLE_NAME: Product
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref order
-        - DynamoDBCrudPolicy:
-            TableName: Product
-        - SQSSendMessagePolicy:
-            QueueName: !GetAtt orderQueue.QueueName
-      Events:
-        OrderEvent:
-          Type: SQS
-          Properties:
-            Queue: 'arn:aws:sqs:ap-southeast-1:026090549419:order-queue'
-            BatchSize: 1

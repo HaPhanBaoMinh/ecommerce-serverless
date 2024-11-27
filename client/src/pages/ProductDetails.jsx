@@ -8,6 +8,8 @@ import ReactStars from "react-rating-stars-component";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import productService from "services/product.service";
+import ReviewCard from "components/ReviewCard";
+import ReviewModal from "components/ReviewModal";
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -101,7 +103,11 @@ const ProductDetails = () => {
                   )}
                 </Button>
               </div>
+              <div className="flex mt-4">
+                <ReviewModal product={product} />
+              </div>
             </div>
+
           </div>
         </div>
       </section>

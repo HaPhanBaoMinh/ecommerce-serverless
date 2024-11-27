@@ -13,7 +13,7 @@ const WithAxios = ({ children }) => {
         (response) => response,
         async (error) => {
           const originalRequest = error.config;
-          if (error.response.status === 401 && originalRequest.url === "/auth/refresh") {
+          if (error?.response?.status === 401 && originalRequest.url === "/auth/refresh") {
             return new Promise((resolve, reject) => {
               setIsLoggedIn(false);
               setAuthData(null);
@@ -23,7 +23,7 @@ const WithAxios = ({ children }) => {
             });
           }
 
-          if (error.response.status === 401 && !originalRequest._retry) {
+          if (error?.response?.status === 401 && !originalRequest._retry) {
             try {
               originalRequest._retry = true;
               const res = await refreshToken();

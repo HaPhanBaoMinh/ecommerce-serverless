@@ -18,8 +18,10 @@ import reviewService from "services/review.service";
 
 const ReviewModal = ({ product_id, reviews }) => {
   const { userData } = useUser();
-  const review = reviews.reviews.find((elm) => elm.user_id === userData?.user_id);
-  const { reviewExist } = reviews;
+  // const review = reviews.reviews.find((elm) => elm.user_id === userData?.user_id);
+  const review = []
+  // const { reviewExist } = reviews;
+  const { reviewExist } = false;
   const [rating, setRating] = useState(1);
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);

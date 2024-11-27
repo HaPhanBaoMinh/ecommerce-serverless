@@ -11,7 +11,6 @@ const PaymentForm = ({ next }) => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      fullname: userData?.fullname,
       email: userData?.email,
       username: userData?.username,
       address: userData?.address,
@@ -29,15 +28,15 @@ const PaymentForm = ({ next }) => {
         onSubmit={handleSubmit((data) => next(data))}
       >
         <Label className="block text-grey-darker text-sm font-bold mb-4">
-          <span>Fullname</span>
+          <span>Username</span>
           <Input
             disabled
             type="text"
             className="shadow appearance-none rounded w-full text-grey-darker mt-2 px-2 py-2 border focus:outline-none"
-            name="fullname"
-            {...register("fullname", { required: "Required" })}
+            name="username"
+            {...register("username", { required: "Required" })}
           />
-          {errors.fullname && <HelperText valid={false}>{errors.fullname.message}</HelperText>}
+          {errors.username && <HelperText valid={false}>{errors.username.message}</HelperText>}
         </Label>
         <Label className="block text-grey-darker text-sm font-bold mb-4">
           <span>Email</span>

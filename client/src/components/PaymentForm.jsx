@@ -1,7 +1,6 @@
 import { CardElement, Elements, ElementsConsumer } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import { Button, HelperText } from "@windmill/react-ui";
-import API from "api/axios.config";
 import { useCart } from "context/CartContext";
 import { formatCurrency } from "helpers/formatCurrency";
 import { useState } from "react";
@@ -10,9 +9,11 @@ import PulseLoader from "react-spinners/PulseLoader";
 import OrderService from "services/order.service";
 import OrderSummary from "./OrderSummary";
 import PaystackBtn from "./PaystackBtn";
+import { useUser } from "context/UserContext";
 
 const PaymentForm = ({ previousStep, addressData, nextStep }) => {
   const { cartSubtotal, cartTotal, cartData, setCartData } = useCart();
+  const { userData } = useUser();
   const [error, setError] = useState();
   const [isProcessing, setIsProcessing] = useState(false);
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUB_KEY);
@@ -21,50 +22,76 @@ const PaymentForm = ({ previousStep, addressData, nextStep }) => {
   const handleSubmit = async (e, elements, stripe) => {
     e.preventDefault();
     setError();
-    const { fullname, email, address, city, state } = addressData;
+    const { address, city, state, country } = addressData;
+
+    const addressDetails = {
+      city,
+      line1: address,
+      state,
+      country,
+    }
+
     if (!stripe || !elements) {
       return;
     }
+
     try {
       setIsProcessing(true);
-      const { data } = await API.post("/payment", {
-        amount: (cartSubtotal * 100).toFixed(),
-        email,
-      });
-
       const card = elements.getElement(CardElement);
       const result = await stripe.createPaymentMethod({
         type: "card",
         card,
         billing_details: {
-          name: fullname,
-          email,
+          name: userData.username,
+          email: userData.email,
           address: {
-            city,
-            line1: address,
-            state,
-            country: "NG", // TODO: change later
-          },
+            ...addressDetails,
+            country: "US"
+          }
         },
       });
+      const orderId = result.paymentMethod.id
+      await OrderService.createOrder(cartData.items, addressDetails, "STRIPE", userData.sub, orderId)
+
       if (result.error) {
         setError(result.error);
       }
 
-      await stripe.confirmCardPayment(data.client_secret, {
-        payment_method: result.paymentMethod.id,
-      });
+      // Delay to allow order to be created
+      await new Promise((resolve) => setTimeout(resolve, 1000 * 2));
 
-      OrderService.createOrder(cartSubtotal, cartTotal, data.id, "STRIPE").then(() => {
-        setCartData({ ...cartData, items: [] });
-        setIsProcessing(false);
+
+      // Call api get get client_secret
+      let idInterval = setInterval(async () => {
+        const response = await OrderService.checkStatus(orderId);
+        if (response?.data.client_secret) {
+          const { data } = response;
+          if (!data?.client_secret) return;
+          await stripe.confirmCardPayment(data.client_secret, {
+            payment_method: result.paymentMethod.id,
+          }).catch((error) => {
+            console.log(error);
+            throw error;
+          });
+          clearInterval(idInterval);
+        }
+      }, 1000 * 5);
+
+
+
+      // setCartData({ items: [] });
+      setIsProcessing(false);
+      setTimeout(() => {
         navigate("/cart/success", {
           state: {
             fromPaymentPage: true,
+            order_id: result.paymentMethod.id,
           },
         });
-      });
+      }, 1000);
+
     } catch (error) {
+      console.log(error);
       setIsProcessing(false);
       // throw error
     }

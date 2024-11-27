@@ -53,7 +53,7 @@ def create_product(body, table):
 
 def get_all_products(table):
     result = table.scan(
-        ProjectionExpression="product_id, product_name, price, image_url"
+        ProjectionExpression="product_id, product_name, price, image_url",
     )  # Scan retrieves all items in the table
     result = decimal_to_float(result)
     items = result.get('Items', [])
